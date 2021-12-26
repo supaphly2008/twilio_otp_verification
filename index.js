@@ -1,4 +1,5 @@
 const express = require("express");
+const cors = require("cors");
 require("dotenv").config();
 const bodyParser = require("body-parser");
 
@@ -8,14 +9,20 @@ const serviceId = process.env.VERIFY_SERVICE_SID;
 
 const client = require("twilio")(accountSid, authToken);
 
-console.log("env", process.env.VERIFY_SERVICE_SID);
-
 const app = express();
 
+app.use(cors());
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
-const PORT = process.env.PORT || 5000;
+app.use(function (req, res, next) {
+  res.header("Access-Control-Allow-Origin", "*");
+  res.header("Access-Control-Allow-Methods", "DELETE, PUT, GET, POST");
+  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  next();
+});
+
+const PORT = process.env.PORT || 3000;
 
 app.post("/getOtp", (req, res) => {
   console.log(req.body);
@@ -33,6 +40,7 @@ app.post("/getOtp", (req, res) => {
       res.send({
         success: false,
         error: {
+          code: e.code,
           message: e.message,
           moreInfo: e.moreInfo,
         },
@@ -53,6 +61,7 @@ app.post("/verifyOtp", (req, res) => {
         });
         return;
       }
+      console.log("check", check);
       res.status(401);
       res.send({
         success: false,
@@ -62,10 +71,23 @@ app.post("/verifyOtp", (req, res) => {
     .catch((e) => {
       res.status(e.status);
       res.send({
+        code: e.code,
         success: false,
         message: e.message,
       });
     });
+});
+
+app.post("sendSms", (req, res) => {
+  const number = req.body.number;
+  client.messages
+    .create({
+      body: "EZCUT通知: 再兩位就輪到您了喔～",
+      messagingServiceSid: messageSid,
+      to: `+886${number}`,
+    })
+    .then((message) => console.log(message.sid))
+    .done();
 });
 
 app.listen(PORT, () => {
