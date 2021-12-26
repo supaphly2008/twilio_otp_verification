@@ -6,6 +6,7 @@ const bodyParser = require("body-parser");
 const accountSid = process.env.ACCOUNT_SID;
 const authToken = process.env.AUTH_TOKEN;
 const serviceId = process.env.VERIFY_SERVICE_SID;
+const messageSid = process.env.MESSAGE_SID;
 
 const client = require("twilio")(accountSid, authToken);
 
@@ -78,7 +79,7 @@ app.post("/verifyOtp", (req, res) => {
     });
 });
 
-app.post("sendSms", (req, res) => {
+app.post("/sendSms", (req, res) => {
   const number = req.body.number;
   client.messages
     .create({
@@ -86,7 +87,21 @@ app.post("sendSms", (req, res) => {
       messagingServiceSid: messageSid,
       to: `+886${number}`,
     })
-    .then((message) => console.log(message.sid))
+    .then((message) => {
+      res.status(200);
+      res.send({
+        success: true,
+        message: "Message sent",
+      });
+    })
+    .catch((e) => {
+      res.status(e.status);
+      res.send({
+        code: e.code,
+        success: false,
+        message: e.message,
+      });
+    })
     .done();
 });
 
