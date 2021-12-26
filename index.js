@@ -81,9 +81,10 @@ app.post("/verifyOtp", (req, res) => {
 
 app.post("/sendSms", (req, res) => {
   const number = req.body.number;
+  const message = req.body.message;
   client.messages
     .create({
-      body: "EZCUT通知: 再兩位就輪到您了喔～",
+      body: message,
       messagingServiceSid: messageSid,
       to: `+886${number}`,
     })
