@@ -20,33 +20,6 @@ const PORT = process.env.PORT || 3000;
 
 app.use("/api", routes);
 
-app.post("/sendSms", (req, res) => {
-  const number = req.body.number;
-  const message = req.body.message;
-  client.messages
-    .create({
-      body: message,
-      messagingServiceSid: messageSid,
-      to: `+886${number}`,
-    })
-    .then((message) => {
-      res.status(200);
-      res.send({
-        success: true,
-        message: "Message sent",
-      });
-    })
-    .catch((e) => {
-      res.status(e.status);
-      res.send({
-        code: e.code,
-        success: false,
-        message: e.message,
-      });
-    })
-    .done();
-});
-
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
